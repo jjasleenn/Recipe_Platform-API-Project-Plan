@@ -1,31 +1,46 @@
 import { Request, Response } from "express";
-import { db } from "../config/firebase";
 
-const collection = db.collection("recipes");
+interface Recipe {id: string; title: string;ingredients: string[]; instructions: string;
+}
 
-export const getAllRecipes = async (req: Request, res: Response) => {
-  const snapshot = await collection.get();
-  const recipes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+let recipes: Recipe[] = [
+  { id: "1", title: "Pasta", ingredients: ["noodles", "sauce"], instructions: "Boil pasta and add sauce." },
+  { id: "2", title: "Salad", ingredients: ["lettuce", "tomato"], instructions: "Mix ingredients." }
+];
+
+// GET all recipes
+export const getAllRecipes = (req: Request, res: Response) => {
   res.json(recipes);
 };
 
-export const getRecipeById = async (req: Request, res: Response) => {
-  const doc = await collection.doc(req.params.id).get();
-  if (!doc.exists) return res.status(404).json({ message: "Recipe not found" });
-  res.json({ id: doc.id, ...doc.data() });
+// GET a recipe by ID
+export const getRecipeById = (req: Request, res: Response) => {
+  const recipe = recipes.find(r => r.id === req.params.id);
+  if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+  res.json(recipe);
 };
 
-export const createRecipe = async (req: Request, res: Response) => {
-  const newRecipe = await collection.add(req.body);
-  res.status(201).json({ id: newRecipe.id });
+// POST create a recipe
+export const createRecipe = (req: Request, res: Response) => {
+  const newRecipe: Recipe = { id: Date.now().toString(), ...req.body };
+  recipes.push(newRecipe);
+  res.status(201).json(newRecipe);
 };
 
-export const updateRecipe = async (req: Request, res: Response) => {
-  await collection.doc(req.params.id).update(req.body);
-  res.json({ message: "Recipe updated" });
+// PUT update a recipe
+export const updateRecipe = (req: Request, res: Response) => {
+  const index = recipes.findIndex(r => r.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: "Recipe not found" });
+
+  recipes[index] = { ...recipes[index], ...req.body };
+  res.json({ message: "Recipe updated", recipe: recipes[index] });
 };
 
-export const deleteRecipe = async (req: Request, res: Response) => {
-  await collection.doc(req.params.id).delete();
+// DELETE a recipe
+export const deleteRecipe = (req: Request, res: Response) => {
+  const index = recipes.findIndex(r => r.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: "Recipe not found" });
+
+  recipes.splice(index, 1);
   res.json({ message: "Recipe deleted" });
 };
