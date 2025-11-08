@@ -15,3 +15,17 @@ export const getRecipeById = async (req: Request, res: Response) => {
   res.json({ id: doc.id, ...doc.data() });
 };
 
+export const createRecipe = async (req: Request, res: Response) => {
+  const newRecipe = await collection.add(req.body);
+  res.status(201).json({ id: newRecipe.id });
+};
+
+export const updateRecipe = async (req: Request, res: Response) => {
+  await collection.doc(req.params.id).update(req.body);
+  res.json({ message: "Recipe updated" });
+};
+
+export const deleteRecipe = async (req: Request, res: Response) => {
+  await collection.doc(req.params.id).delete();
+  res.json({ message: "Recipe deleted" });
+};
