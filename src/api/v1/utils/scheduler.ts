@@ -11,6 +11,6 @@ cron.schedule("0 0 * * *", () => {
 });
 
 // Example function that you might call in app.ts
-export const startscheduler = () => {
+export const startScheduler = () => {
   console.log("Scheduler started...");
 };
